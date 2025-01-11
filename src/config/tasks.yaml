@@ -1,0 +1,41 @@
+ingredient_detection_task:
+  description: >
+    Detect the ingredients from the {uploaded_image} using an advanced vision model and filter the raw list.
+  agent: ingredient_detection_agent
+  expected_output: >
+    A list of detected ingredients from the image.
+
+dietary_filtering_task:
+  description: >
+    Filter the detected ingredients based on user-provided {dietary_restrictions}.
+  agent: dietary_filtering_agent
+  expected_output: >
+    A list of filtered ingredients based on dietary restrictions.
+
+calorie_estimation_task:
+  description: >
+    Estimate the total calories of the ingredients detected in the {uploaded_image}.
+  agent: calorie_estimation_agent
+  expected_output: >
+    Estimated calorie information for the ingredients.
+
+nutrient_analysis_task:
+  description: >
+    Provide a detailed breakdown of key nutrients such as protein, carbohydrates, fats, vitamins, and minerals based on {uploaded_image}
+  agent: nutrient_analysis_agent
+  expected_output: >
+    Nutrient analysis based on the calorie estimation.
+
+health_evaluation_task:
+  description: >
+    Evaluate the overall healthiness of the meal, provide a summary, and include a disclaimer about nutritional accuracy.
+  agent: health_evaluation_agent
+  expected_output: >
+    Health evaluation based on the nutrient analysis.
+
+recipe_suggestion_task:
+  description: >
+    Generate recipe ideas using the filtered ingredients and ensure they fit within the user’s calorie goal and dietary restrictions.
+  agent: recipe_suggestion_agent
+  expected_output: >
+    Suggested recipes based on the filtered ingredients.

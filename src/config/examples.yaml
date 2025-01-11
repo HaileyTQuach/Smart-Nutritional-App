@@ -1,0 +1,140 @@
+# Input examples for NutriCoach workflow with updated formats
+
+# Example of a completed dish (for dish analysis workflow)
+example1_dish: >
+  """
+  Decision Output: dish
+  Input:
+    Image: Picture of a salad with lettuce, tomato, cucumber, and olive oil.
+    Dietary Restrictions: None.
+    Calorie Goal: 400 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Lettuce, tomato, cucumber, olive oil.
+    Estimated Calories: 350 kcal.
+    Nutrient Breakdown:
+      Protein: 5g
+      Carbs: 10g
+      Fats: 12g
+    Health Evaluation: This is a balanced meal with a low calorie count.
+    Disclaimer: The nutritional information provided is approximate.
+  """
+
+# Example of raw ingredients (for recipe suggestion workflow)
+example2_ingredients_vegan_glutenfree: >
+  """
+  Decision Output: ingredients
+  Input:
+    Image: Picture of raw vegetables including broccoli, carrots, and bell peppers and a loaf of bread.
+    Dietary Restrictions: Vegan, gluten-free.
+    Calorie Goal: 300 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Broccoli, carrots, bell peppers, bread.
+    Filtered Ingredients: Broccoli, carrots, bell peppers.
+    Suggested Recipes:
+      1. Roasted Broccoli, Carrots, and Peppers (300 kcal)
+         Ingredients:
+           - 1.5 cups broccoli florets
+           - 1.5 cups carrots, sliced
+           - 1.5 cups bell peppers (mixed colors)
+           - 1 tbsp olive oil
+         Instructions:
+           - Preheat the oven to 400°F (200°C).
+           - Toss all the vegetables in olive oil.
+           - Spread on a baking sheet and roast for 20-25 minutes.
+  """
+
+
+# Example of a high-calorie dish (for dish analysis workflow)
+example3_high_calorie: >
+  """
+  Decision Output: dish
+  Input:
+    Image: Picture of pasta with tomato sauce and meatballs.
+    Dietary Restrictions: None.
+    Calorie Goal: 600 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Pasta, tomato sauce, meatballs.
+    Estimated Calories: 700 kcal.
+    Nutrient Breakdown:
+      Protein: 30g
+      Carbs: 90g
+      Fats: 20g
+    Health Evaluation: The dish is relatively high in calories but offers a good balance of protein and carbohydrates. Consider reducing portion size to meet calorie goals.
+    Disclaimer: Nutritional data is estimated and may vary based on specific ingredients and preparation methods.
+  """
+
+# Example of raw ingredients for a keto-friendly recipe
+example4_keto_recipe: >
+  """
+  Decision Output: ingredients
+  Input:
+    Image: Picture of raw vegetables (broccoli, zucchini, and bell peppers), rice.
+    Dietary Restrictions: Keto.
+    Calorie Goal: 500 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Broccoli, zucchini, bell peppers.
+    Filtered Ingredients: Broccoli, bell peppers.
+    Suggested Recipes:
+      1. Keto Roasted Vegetables (450 kcal)
+         Ingredients:
+           - 2 cups broccoli florets
+           - 1 cup bell peppers (mixed colors)
+           - 1 tbsp olive oil
+         Instructions:
+           - Preheat the oven to 400°F (200°C).
+           - Toss the vegetables in olive oil.
+           - Spread on a baking sheet and roast for 20-25 minutes.
+  """
+
+# Additional Examples
+
+# Example of a nutritious smoothie dish analysis
+example5_dish_smoothie: >
+  """
+  Decision Output: dish
+  Input:
+    Image: Picture of a fruit smoothie in a glass.
+    Dietary Restrictions: None.
+    Calorie Goal: 250 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Banana, strawberry, yogurt, honey.
+    Estimated Calories: 240 kcal.
+    Nutrient Breakdown:
+      Protein: 8g
+      Carbs: 50g
+      Fats: 2g
+    Health Evaluation: A nutritious and refreshing smoothie low in fat.
+    Disclaimer: Nutritional values may vary based on ingredient brands.
+  """
+
+# Example of raw ingredients for a dairy-rich, low-carb recipe
+example6_ingredients_dairy_hearty: >
+  """
+  Decision Output: ingredients
+  Input:
+    Image: Picture of raw ingredients including chicken, mushrooms, cream, and thyme.
+    Dietary Restrictions: Low-Carb.
+    Calorie Goal: 450 kcal.
+    
+  Expected Output:
+    Detected Ingredients: Chicken, mushrooms, cream, thyme.
+    Filtered Ingredients: Chicken, mushrooms, cream, thyme.
+    Suggested Recipes:
+      1. Creamy Chicken with Mushrooms (450 kcal)
+         Ingredients:
+           - 200g chicken breast
+           - 1 cup sliced mushrooms
+           - 1/2 cup heavy cream
+           - 1 tsp fresh thyme leaves
+           - 1 tbsp olive oil
+         Instructions:
+           - Heat olive oil in a pan over medium heat.
+           - Sauté mushrooms until golden.
+           - Add chicken pieces and cook until browned.
+           - Stir in heavy cream and thyme, simmer until chicken is cooked through.
+  """
