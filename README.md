@@ -45,7 +45,7 @@ The project is built using the CrewAI framework, which organizes agents and task
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/HaileyTQuach/Smart-Nutritional-App.git
-   cd AI-NutriCoach-Crew
+   cd Smart-Nutritional-App
    ```
 2. **Create and activate a virtual environment**:
   ```bash
@@ -100,7 +100,7 @@ python main.py train <n_iterations> <output_filename> <image_path> <dietary_rest
 ## File Structure
 
 ```
-AI-NutriCoach-Crew/
+Smart-Nutritional-App-Crew/
 │
 ├── config/
 │   ├── agents.yaml               # Configuration for agents
