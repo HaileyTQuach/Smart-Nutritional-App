@@ -55,15 +55,6 @@ class BaseNutriCoachCrew:
             verbose=True
         )
 
-    # @agent
-    # def calorie_estimation_agent(self) -> Agent:
-    #     return Agent(
-    #         config=self.agents_config['calorie_estimation_agent'],
-    #         tools=[DietaryFilterTool.filter_based_on_restrictions],
-    #         allow_delegation=False,
-    #         verbose=True
-        # )
-
     @agent
     def nutrient_analysis_agent(self) -> Agent:
         return Agent(
@@ -119,17 +110,6 @@ class BaseNutriCoachCrew:
         )
 
     @task
-    def calorie_estimation_task(self) -> Task:
-        task_config = self.tasks_config['calorie_estimation_task']
-
-        return Task(
-            description=task_config['description'],
-            agent=self.calorie_estimation_agent(),
-            input_data={'image_input': self.image_data},
-            expected_output=task_config['expected_output']
-            )
-
-    @task
     def nutrient_analysis_task(self) -> Task:
         task_config = self.tasks_config['nutrient_analysis_task']
 
@@ -137,9 +117,6 @@ class BaseNutriCoachCrew:
             description=task_config['description'],
             agent=self.nutrient_analysis_agent(),
             depends_on=['calorie_estimation_task'],
-            input_data=lambda outputs: {
-                'calorie_info': outputs['calorie_estimation_task']
-            },
             expected_output=task_config['expected_output']
         )
 
@@ -203,15 +180,11 @@ class NutriCoachAnalysisCrew(BaseNutriCoachCrew):
     @crew
     def crew(self) -> Crew:
         tasks = [
-            self.ingredient_detection_task(),
-            self.calorie_estimation_task(),
             self.nutrient_analysis_task(),
             self.health_evaluation_task()
         ]
 
         agents = [
-            self.ingredient_detection_agent(),
-            self.calorie_estimation_agent(),
             self.nutrient_analysis_agent(),
             self.health_evaluation_agent()
         ]

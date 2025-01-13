@@ -12,13 +12,6 @@ dietary_filtering_task:
   expected_output: >
     A list of filtered ingredients based on dietary restrictions.
 
-calorie_estimation_task:
-  description: >
-    Estimate the total calories of the ingredients detected in the {uploaded_image}.
-  agent: calorie_estimation_agent
-  expected_output: >
-    Estimated calorie information for the ingredients.
-
 nutrient_analysis_task:
   description: >
     Provide a detailed breakdown of key nutrients such as protein, carbohydrates, fats, vitamins, and minerals based on {uploaded_image}
