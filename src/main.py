@@ -52,14 +52,6 @@ def run(image_path: str, dietary_restrictions: str, workflow_type: str):
     print("########################\n")
     print(final_outputs)
 
-def train(n_iterations: int, output_filename: str, image_path: str, dietary_restrictions: str, workflow_type: str):
-    """
-    Placeholder for training functionality.
-    Adapt this function based on how you want to handle training 
-    with the separate crew structures if needed.
-    """
-    print("Training functionality is not implemented in this example.")
-
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         # Example usage: python main.py image.jpg analysis
