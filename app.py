@@ -1,4 +1,5 @@
 import gradio as gr
+import time
 from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
 from models import NutrientAnalysisOutput
 
@@ -104,7 +105,7 @@ def format_analysis_output(final_output):
     return output
 
 
-def analyze_food(image, dietary_restrictions, workflow_type):
+def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progress(0)):
     """
     Wrapper function for the Gradio interface.
     
@@ -113,6 +114,7 @@ def analyze_food(image, dietary_restrictions, workflow_type):
     :param workflow_type: Workflow type ("recipe" or "analysis")
     :return: Result from the NutriCoach workflow.
     """
+    progress(0, desc="Starting...")
     image.save("uploaded_image.jpg")  # Save the uploaded image temporarily
     image_path = "uploaded_image.jpg"
 
@@ -147,28 +149,77 @@ def analyze_food(image, dietary_restrictions, workflow_type):
     elif workflow_type == "analysis":
         nutrient_markdown = format_analysis_output(final_output)
         return nutrient_markdown
+    
+# Define custom CSS for styling
+css = """
+.gradio-container {
+    background: url('file=background.jpg');
+    background-size: cover !important;
+}
 
-# Define the Gradio interface using Blocks for a two-column layout
-with gr.Blocks() as demo:
-    # Title and Description at the top
-    gr.Markdown("# AI NutriCoach")
-    gr.Markdown("Upload an image of food and select a workflow type (recipe or analysis) to get nutritional insights or recipe ideas.")
+.title {
+    font-size: 1.5em !important; 
+    text-align: center !important;
+    color: #FFD700; 
+}
+
+.text {
+    text-align: center;
+}
+"""
+
+js = """
+function createGradioAnimation() {
+    var container = document.createElement('div');
+    container.id = 'gradio-animation';
+    container.style.fontSize = '2em';
+    container.style.fontWeight = 'bold';
+    container.style.textAlign = 'center';
+    container.style.marginBottom = '20px';
+    container.style.color = '#eba93f';
+
+    var text = 'Welcome to the AI NutriCoach!';
+    for (var i = 0; i < text.length; i++) {
+        (function(i){
+            setTimeout(function(){
+                var letter = document.createElement('span');
+                letter.style.opacity = '0';
+                letter.style.transition = 'opacity 0.2s';
+                letter.innerText = text[i];
+
+                container.appendChild(letter);
+
+                setTimeout(function() {
+                    letter.style.opacity = '0.9';
+                }, 50);
+            }, i * 250);
+        })(i);
+    }
+
+    var gradioContainer = document.querySelector('.gradio-container');
+    gradioContainer.insertBefore(container, gradioContainer.firstChild);
+
+    return 'Animation created';
+}
+"""
+
+# Use a theme and custom CSS with Blocks
+with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
+    gr.Markdown("# How it works", elem_classes="title")
+    gr.Markdown("Upload an image of food and select a workflow type (recipe or analysis) to get nutritional insights or recipe ideas.", elem_classes="text")
 
     with gr.Row():
-        # Left Column: Inputs
-        with gr.Column(scale=1, min_width=300):
-            gr.Markdown("### Inputs")
+        with gr.Column(scale=1, min_width=400):
+            gr.Markdown("## Inputs", elem_classes="title")
             image_input = gr.Image(type="pil", label="Upload Image")
             dietary_input = gr.Textbox(label="Dietary Restrictions (optional)", placeholder="e.g., vegan")
             workflow_radio = gr.Radio(["recipe", "analysis"], label="Workflow Type")
             submit_btn = gr.Button("Analyze")
         
-        # Right Column: Results
         with gr.Column(scale=2, min_width=600):
-            gr.Markdown("### Results")
+            gr.Markdown("## Results", elem_classes="title")
             result_display = gr.Markdown()
     
-    # Define the event for the button
     submit_btn.click(
         fn=analyze_food,
         inputs=[image_input, dietary_input, workflow_radio],
@@ -177,5 +228,5 @@ with gr.Blocks() as demo:
 
 # Launch the Gradio interface
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share=True)
 
