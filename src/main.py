@@ -1,6 +1,7 @@
 import os
 import sys
 import base64
+import json
 from dotenv import load_dotenv
 from crew import NutriCoachAnalysisCrew, NutriCoachRecipeCrew
 
@@ -35,6 +36,16 @@ def run(image_path: str, dietary_restrictions: str, workflow_type: str):
 
     crew_obj = crew_instance.crew()
     final_outputs = crew_obj.kickoff(inputs=inputs)
+
+    # Accessing the crew output
+    print(f"Raw Output: {final_outputs.raw}")
+    if final_outputs.json_dict:
+        print(f"JSON Output: {json.dumps(final_outputs.json_dict, indent=2)}")
+    if final_outputs.pydantic:
+        print(f"Pydantic Output: {final_outputs.pydantic}")
+    print(f"Tasks Output: {final_outputs.tasks_output}")
+    print(f"Token Usage: {final_outputs.token_usage}")
+
     
     print("\n\n########################")
     print("## Here is the result")
