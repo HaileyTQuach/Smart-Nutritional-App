@@ -10,7 +10,7 @@ from tools import (
     DietaryFilterTool,
     NutrientAnalysisTool
 )
-from models import RecipeSuggestionOutput 
+from models import RecipeSuggestionOutput, NutrientAnalysisOutput 
 from io import BytesIO
 
 load_dotenv()
@@ -64,6 +64,7 @@ class BaseNutriCoachCrew:
             config=self.agents_config['nutrient_analysis_agent'],
             tools=[NutrientAnalysisTool.analyze_image],
             allow_delegation=False,
+            max_iter=4,
             verbose=True
         )
 
@@ -120,21 +121,8 @@ class BaseNutriCoachCrew:
             description=task_config['description'],
             agent=self.nutrient_analysis_agent(),
             depends_on=['calorie_estimation_task'],
-            expected_output=task_config['expected_output']
-        )
-
-    @task
-    def health_evaluation_task(self) -> Task:
-        task_config = self.tasks_config['health_evaluation_task']
-
-        return Task(
-            description=task_config['description'],
-            agent=self.health_evaluation_agent(),
-            depends_on=['nutrient_analysis_task'],
-            input_data=lambda outputs: {
-                'nutrient_info': outputs['nutrient_analysis_task']
-            },
-            expected_output=task_config['expected_output']
+            expected_output=task_config['expected_output'],
+            output_json=NutrientAnalysisOutput
         )
 
     @task
@@ -185,12 +173,10 @@ class NutriCoachAnalysisCrew(BaseNutriCoachCrew):
     def crew(self) -> Crew:
         tasks = [
             self.nutrient_analysis_task(),
-            self.health_evaluation_task()
         ]
 
         agents = [
             self.nutrient_analysis_agent(),
-            self.health_evaluation_agent()
         ]
 
         return Crew(

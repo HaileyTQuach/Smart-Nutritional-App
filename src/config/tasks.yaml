@@ -14,17 +14,11 @@ dietary_filtering_task:
 
 nutrient_analysis_task:
   description: >
-    Provide a detailed breakdown of key nutrients such as protein, carbohydrates, fats, vitamins, and minerals based on {uploaded_image}
+    Provide a detailed breakdown of key nutrients such as protein, carbohydrates, fats, vitamins, and minerals based on {uploaded_image}; 
+    as well the caloric content of the food. Ends with a health evaluation for the dish.
   agent: nutrient_analysis_agent
   expected_output: >
     Nutrient analysis based on the calorie estimation.
-
-health_evaluation_task:
-  description: >
-    Evaluate the overall healthiness of the meal, provide a summary, and include a disclaimer about nutritional accuracy.
-  agent: health_evaluation_agent
-  expected_output: >
-    Health evaluation based on the nutrient analysis.
 
 recipe_suggestion_task:
   description: >

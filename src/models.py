@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional, Dict
 
 class Recipe(BaseModel):
     title: str = Field(..., description="Recipe title")
@@ -10,11 +10,26 @@ class Recipe(BaseModel):
 class RecipeSuggestionOutput(BaseModel):
     recipes: List[Recipe] = Field(..., description="List of suggested recipes")
 
+class VitaminInfo(BaseModel):
+    name: str = Field(..., description="Name of the vitamin")
+    percentage_dv: str = Field(..., description="Percentage of the Daily Value")
+
+class MineralInfo(BaseModel):
+    name: str = Field(..., description="Name of the mineral")
+    amount: str = Field(..., description="Amount and unit of the mineral")
+
+class NutrientBreakdown(BaseModel):
+    protein: Optional[str] = Field(None, description="Protein content")
+    carbohydrates: Optional[str] = Field(None, description="Carbohydrates content")
+    fats: Optional[str] = Field(None, description="Fats content")
+    vitamins: List[VitaminInfo] = Field(default_factory=list, description="List of vitamins and their %DV")
+    minerals: List[MineralInfo] = Field(default_factory=list, description="List of minerals and their amounts")
+
 class NutrientAnalysisOutput(BaseModel):
-    calories: int = Field(..., description="Total calorie count of the meal")
-    nutrients: Dict[str, str] = Field(
-        ..., description="Mapping of nutrient names to their amounts (with units if applicable)"
-    )
-    health_evaluation: Optional[str] = Field(
-        None, description="Summary of health evaluation based on the nutrient analysis"
-    )
+    dish: Optional[str] = Field(None, description="Identified dish")
+    portion_size: Optional[str] = Field(None, description="Portion size description")
+    estimated_calories: Optional[int] = Field(None, description="Estimated calories per portion")
+    nutrients: NutrientBreakdown = Field(default_factory=NutrientBreakdown, description="Detailed nutrient breakdown")
+    health_evaluation: Optional[str] = Field(None, description="Health evaluation summary")
+
+

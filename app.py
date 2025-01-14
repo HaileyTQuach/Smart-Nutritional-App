@@ -1,5 +1,108 @@
 import gradio as gr
 from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
+from models import NutrientAnalysisOutput
+
+
+def format_recipe_output(final_output):
+    """
+    Formats the recipe output into a table-based Markdown format.
+    
+    :param final_output: The output from the NutriCoachRecipe workflow.
+    :return: Formatted output as a Markdown string.
+    """
+    output = "## 🍽 Vegan Recipe Ideas\n\n"
+    recipes = []
+
+    # Check if final_output directly contains recipes
+    if "recipes" in final_output:
+        recipes = final_output["recipes"]
+    else:
+        # Fallback: try to extract from nested task output
+        recipe_task_output = final_output.get("recipe_suggestion_task")
+        if recipe_task_output and hasattr(recipe_task_output, "json_dict") and recipe_task_output.json_dict:
+            recipes = recipe_task_output.json_dict.get("recipes", [])
+    
+    if recipes:
+        for idx, recipe in enumerate(recipes, 1):
+            output += f"### {idx}. {recipe['title']}\n\n"
+            
+            # Create a table for ingredients
+            output += "**Ingredients:**\n"
+            output += "| Ingredient |\n"
+            output += "|------------|\n"
+            for ingredient in recipe['ingredients']:
+                output += f"| {ingredient} |\n"
+            output += "\n"
+            
+            # Display instructions and calorie estimate
+            output += f"**Instructions:**\n{recipe['instructions']}\n\n"
+            output += f"**Calorie Estimate:** {recipe['calorie_estimate']} kcal\n\n"
+            output += "---\n\n"
+    else:
+        output += "No recipes could be generated."
+    
+    return output
+
+def format_analysis_output(final_output):
+    """
+    Formats nutritional analysis output into a table-based Markdown format,
+    including health evaluation at the end.
+    
+    :param final_output: The JSON output from the NutriCoachAnalysis workflow.
+    :return: Formatted output as a Markdown string.
+    """
+    output = "## 🥗 Nutritional Analysis\n\n"
+    
+    # Basic dish information
+    if dish := final_output.get('dish'):
+        output += f"**Dish:** {dish}\n\n"
+    if portion := final_output.get('portion_size'):
+        output += f"**Portion Size:** {portion}\n\n"
+    if est_cal := final_output.get('estimated_calories'):
+        output += f"**Estimated Calories:** {est_cal} calories\n\n"
+    if total_cal := final_output.get('total_calories'):
+        output += f"**Total Calories:** {total_cal} calories\n\n"
+
+    # Nutrient breakdown table
+    output += "**Nutrient Breakdown:**\n\n"
+    output += "| **Nutrient**       | **Amount** |\n"
+    output += "|--------------------|------------|\n"
+    
+    nutrients = final_output.get('nutrients', {})
+    # Display macronutrients
+    for macro in ['protein', 'carbohydrates', 'fats']:
+        if value := nutrients.get(macro):
+            output += f"| **{macro.capitalize()}** | {value} |\n"
+    
+    # Display vitamins table if available
+    vitamins = nutrients.get('vitamins', [])
+    if vitamins:
+        output += "\n**Vitamins:**\n\n"
+        output += "| **Vitamin** | **%DV** |\n"
+        output += "|-------------|--------|\n"
+        for v in vitamins:
+            name = v.get('name', 'N/A')
+            dv = v.get('percentage_dv', 'N/A')
+            output += f"| {name} | {dv} |\n"
+    
+    # Display minerals table if available
+    minerals = nutrients.get('minerals', [])
+    if minerals:
+        output += "\n**Minerals:**\n\n"
+        output += "| **Mineral** | **Amount** |\n"
+        output += "|-------------|-----------|\n"
+        for m in minerals:
+            name = m.get('name', 'N/A')
+            amount = m.get('amount', 'N/A')
+            output += f"| {name} | {amount} |\n"
+    
+    # Append health evaluation at the end
+    if health_eval := final_output.get('health_evaluation'):
+        output += "\n**Health Evaluation:**\n\n"
+        output += health_eval + "\n"
+    
+    return output
+
 
 def analyze_food(image, dietary_restrictions, workflow_type):
     """
@@ -35,23 +138,44 @@ def analyze_food(image, dietary_restrictions, workflow_type):
     # Run the crew workflow and get the result
     crew_obj = crew_instance.crew()
     final_output = crew_obj.kickoff(inputs=inputs)
-    
-    return final_output
 
-# Define the Gradio interface
-interface = gr.Interface(
-    fn=analyze_food,
-    inputs=[
-        gr.Image(type="pil"),                           # Image input (PIL format)
-        gr.Textbox(label="Dietary Restrictions (optional)", placeholder="e.g., vegan"),  # Text input
-        gr.Radio(["recipe", "analysis"], label="Workflow Type")  # Radio buttons for workflow selection
-    ],
-    outputs=gr.Textbox(label="Result"),                 # Textbox output for result
-    title="AI NutriCoach",
-    description="Upload an image of food and select a workflow type (recipe or analysis) to get nutritional insights or recipe ideas.",
-    theme="default"
-)
+    final_output = final_output.to_dict()
+
+    if workflow_type == "recipe":
+        recipe_markdown = format_recipe_output(final_output)
+        return recipe_markdown
+    elif workflow_type == "analysis":
+        nutrient_markdown = format_analysis_output(final_output)
+        return nutrient_markdown
+
+# Define the Gradio interface using Blocks for a two-column layout
+with gr.Blocks() as demo:
+    # Title and Description at the top
+    gr.Markdown("# AI NutriCoach")
+    gr.Markdown("Upload an image of food and select a workflow type (recipe or analysis) to get nutritional insights or recipe ideas.")
+
+    with gr.Row():
+        # Left Column: Inputs
+        with gr.Column(scale=1, min_width=300):
+            gr.Markdown("### Inputs")
+            image_input = gr.Image(type="pil", label="Upload Image")
+            dietary_input = gr.Textbox(label="Dietary Restrictions (optional)", placeholder="e.g., vegan")
+            workflow_radio = gr.Radio(["recipe", "analysis"], label="Workflow Type")
+            submit_btn = gr.Button("Analyze")
+        
+        # Right Column: Results
+        with gr.Column(scale=2, min_width=600):
+            gr.Markdown("### Results")
+            result_display = gr.Markdown()
+    
+    # Define the event for the button
+    submit_btn.click(
+        fn=analyze_food,
+        inputs=[image_input, dietary_input, workflow_radio],
+        outputs=result_display
+    )
 
 # Launch the Gradio interface
 if __name__ == "__main__":
-    interface.launch()
+    demo.launch()
+
