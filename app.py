@@ -1,8 +1,6 @@
 import gradio as gr
 import time
 from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
-from models import NutrientAnalysisOutput
-
 
 def format_recipe_output(final_output):
     """
@@ -11,7 +9,7 @@ def format_recipe_output(final_output):
     :param final_output: The output from the NutriCoachRecipe workflow.
     :return: Formatted output as a Markdown string.
     """
-    output = "## 🍽 Vegan Recipe Ideas\n\n"
+    output = "## 🍽 Recipe Ideas\n\n"
     recipes = []
 
     # Check if final_output directly contains recipes
@@ -105,7 +103,7 @@ def format_analysis_output(final_output):
     return output
 
 
-def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progress(0)):
+def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progress(track_tqdm=True)):
     """
     Wrapper function for the Gradio interface.
     
@@ -114,7 +112,7 @@ def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progres
     :param workflow_type: Workflow type ("recipe" or "analysis")
     :return: Result from the NutriCoach workflow.
     """
-    progress(0, desc="Starting...")
+    # progress(0, desc="Starting...")
     image.save("uploaded_image.jpg")  # Save the uploaded image temporarily
     image_path = "uploaded_image.jpg"
 
@@ -178,13 +176,13 @@ function createGradioAnimation() {
     container.style.marginBottom = '20px';
     container.style.color = '#eba93f';
 
-    var text = 'Welcome to the AI NutriCoach!';
+    var text = 'Welcome to your AI NutriCoach!';
     for (var i = 0; i < text.length; i++) {
         (function(i){
             setTimeout(function(){
                 var letter = document.createElement('span');
                 letter.style.opacity = '0';
-                letter.style.transition = 'opacity 0.2s';
+                letter.style.transition = 'opacity 0.1s';
                 letter.innerText = text[i];
 
                 container.appendChild(letter);
@@ -217,8 +215,8 @@ with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
             submit_btn = gr.Button("Analyze")
         
         with gr.Column(scale=2, min_width=600):
-            gr.Markdown("## Results", elem_classes="title")
-            result_display = gr.Markdown()
+            gr.Markdown("## Results will appear here...", elem_classes="title")
+            result_display = gr.Markdown(height=800, )
     
     submit_btn.click(
         fn=analyze_food,
@@ -229,4 +227,3 @@ with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
 # Launch the Gradio interface
 if __name__ == "__main__":
     demo.launch(share=True)
-
