@@ -93,7 +93,7 @@ class DietaryFilterTool:
         """
         # Initialize the WatsonX model
         model = ModelInference(
-            model_id="meta-llama/llama-3-2-11b-vision-instruct",
+            model_id="ibm/granite-3-8b-instruct",
             credentials=credentials,
             project_id=project_id,
             params={"max_tokens": 150},
