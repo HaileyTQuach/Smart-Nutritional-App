@@ -70,18 +70,6 @@ class BaseNutriCoachCrew:
         )
 
     @agent
-    def health_evaluation_agent(self) -> Agent:
-        return Agent(
-            config=self.agents_config['health_evaluation_agent'],
-            depends_on=['nutrient_analysis_task'],
-            input_data=lambda outputs: {
-                'nutrient_info': outputs['nutrient_analysis_task']
-            },
-            allow_delegation=False,
-            verbose=True
-        )
-
-    @agent
     def recipe_suggestion_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['recipe_suggestion_agent'],
@@ -121,7 +109,6 @@ class BaseNutriCoachCrew:
         return Task(
             description=task_config['description'],
             agent=self.nutrient_analysis_agent(),
-            depends_on=['calorie_estimation_task'],
             expected_output=task_config['expected_output'],
             output_json=NutrientAnalysisOutput
         )
