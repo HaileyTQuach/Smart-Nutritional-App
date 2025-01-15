@@ -3,20 +3,21 @@ import yaml
 import base64
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from dotenv import load_dotenv
 from tools import (
     ExtractIngredientsTool, 
     FilterIngredientsTool, 
     DietaryFilterTool,
     NutrientAnalysisTool
 )
+from ibm_watsonx_ai import Credentials, APIClient
 from models import RecipeSuggestionOutput, NutrientAnalysisOutput 
-from io import BytesIO
 
-load_dotenv()
-WATSONX_API_KEY = os.environ.get('WATSONX_API_KEY')
-WATSONX_URL = os.environ.get('WATSONX_URL')
-WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
+credentials = Credentials(
+                   url = "https://us-south.ml.cloud.ibm.com",
+                   # api_key = "<YOUR_API_KEY>" # Normally you'd put an API key here, but we've got you covered here
+                  )
+client = APIClient(credentials)
+project_id = "skills-network"
 
 # Get the absolute path to the config directory
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
