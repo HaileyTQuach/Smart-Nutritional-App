@@ -2,10 +2,9 @@ import json
 import os
 import base64
 import requests
-from dotenv import load_dotenv
 from langchain.tools import tool
 from PIL import Image
-from ibm_watsonx_ai import Credentials
+from ibm_watsonx_ai import Credentials, APIClient
 from ibm_watsonx_ai.foundation_models import ModelInference
 from io import BytesIO
 from typing import List
@@ -14,15 +13,13 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info("Extracting ingredients from image...")
 
-# Load environment variables (e.g., API keys)
-WATSONX_API_KEY = os.environ.get('WATSONX_API_KEY')
-WATSONX_URL = os.environ.get('WATSONX_URL')
-WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
-
 credentials = Credentials(
-    url=WATSONX_URL,
-    api_key=WATSONX_API_KEY
-)
+                   url = "https://us-south.ml.cloud.ibm.com",
+                   # api_key = "<YOUR_API_KEY>" # Normally you'd put an API key here, but we've got you covered here
+                  )
+client = APIClient(credentials)
+project_id = "skills-network"
+
 
 class ExtractIngredientsTool():
     @tool("Extract ingredients")
@@ -52,7 +49,7 @@ class ExtractIngredientsTool():
         model = ModelInference(
             model_id="meta-llama/llama-3-2-90b-vision-instruct",
             credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
+            project_id=project_id,
             params={"max_tokens": 300},
         )
         response = model.chat(
@@ -96,9 +93,9 @@ class DietaryFilterTool:
         """
         # Initialize the WatsonX model
         model = ModelInference(
-            model_id="meta-llama/llama-3-2-11b-vision-instruct",
+            model_id="ibm/granite-3-8b-instruct",
             credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
+            project_id=project_id,
             params={"max_tokens": 150},
         )
 
@@ -153,7 +150,7 @@ class NutrientAnalysisTool():
         model = ModelInference(
             model_id="meta-llama/llama-3-2-90b-vision-instruct",
             credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
+            project_id=project_id,
             params={"max_tokens": 300},
         )
         # Assistant prompt (can be customized)

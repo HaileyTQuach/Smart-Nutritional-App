@@ -3,20 +3,21 @@ import yaml
 import base64
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from dotenv import load_dotenv
-from tools import (
+from src.tools import (
     ExtractIngredientsTool, 
     FilterIngredientsTool, 
     DietaryFilterTool,
     NutrientAnalysisTool
 )
-from models import RecipeSuggestionOutput, NutrientAnalysisOutput 
-from io import BytesIO
+from ibm_watsonx_ai import Credentials, APIClient
+from src.models import RecipeSuggestionOutput, NutrientAnalysisOutput 
 
-load_dotenv()
-WATSONX_API_KEY = os.environ.get('WATSONX_API_KEY')
-WATSONX_URL = os.environ.get('WATSONX_URL')
-WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
+credentials = Credentials(
+                   url = "https://us-south.ml.cloud.ibm.com",
+                   # api_key = "<YOUR_API_KEY>" # Normally you'd put an API key here, but we've got you covered here
+                  )
+client = APIClient(credentials)
+project_id = "skills-network"
 
 # Get the absolute path to the config directory
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
@@ -69,18 +70,6 @@ class BaseNutriCoachCrew:
         )
 
     @agent
-    def health_evaluation_agent(self) -> Agent:
-        return Agent(
-            config=self.agents_config['health_evaluation_agent'],
-            depends_on=['nutrient_analysis_task'],
-            input_data=lambda outputs: {
-                'nutrient_info': outputs['nutrient_analysis_task']
-            },
-            allow_delegation=False,
-            verbose=True
-        )
-
-    @agent
     def recipe_suggestion_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['recipe_suggestion_agent'],
@@ -120,7 +109,6 @@ class BaseNutriCoachCrew:
         return Task(
             description=task_config['description'],
             agent=self.nutrient_analysis_agent(),
-            depends_on=['calorie_estimation_task'],
             expected_output=task_config['expected_output'],
             output_json=NutrientAnalysisOutput
         )
