@@ -227,4 +227,4 @@ with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
 
 # Launch the Gradio interface
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch(server_name="0.0.0.0", server_port=5000)
