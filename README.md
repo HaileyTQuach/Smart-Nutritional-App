@@ -1,6 +1,12 @@
-# AI Dietary Crew
+---
+title: AI_NutriCoach
+app_file: app.py
+sdk: gradio
+sdk_version: 5.12.0
+---
+# AI NutriCoach (aka AI Dietary Crew)
 
-AI Dietary Crew is an AI-powered nutrition assistant that leverages advanced vision models and natural language processing to detect ingredients from food images, filter ingredients based on dietary restrictions, estimate calories, provide detailed nutrient analysis, and generate recipe suggestions. This project demonstrates the use of CrewAI, WatsonX, and other AI tools to deliver insightful and personalized nutritional feedback.
+AI NutriCoach is an AI-powered nutrition assistant that leverages advanced vision models and natural language processing to detect ingredients from food images, filter ingredients based on dietary restrictions, estimate calories, provide detailed nutrient analysis, and generate recipe suggestions. This project demonstrates the use of CrewAI, WatsonX, and other AI tools to deliver insightful and personalized nutritional feedback.
 
 ## Features
 
@@ -91,7 +97,7 @@ Example:
 python main.py food.jpg analysis
 ```
 
-3. For training (future functionality)
+3. For training (future functionality - TODO)
 
 ```bash
 python main.py train <n_iterations> <output_filename> <image_path> <dietary_restrictions> <workflow_type>
