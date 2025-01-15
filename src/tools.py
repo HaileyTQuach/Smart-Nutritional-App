@@ -2,7 +2,6 @@ import json
 import os
 import base64
 import requests
-from dotenv import load_dotenv
 from langchain.tools import tool
 from PIL import Image
 from ibm_watsonx_ai import Credentials, APIClient

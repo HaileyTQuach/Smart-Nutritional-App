@@ -3,14 +3,14 @@ import yaml
 import base64
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from tools import (
+from src.tools import (
     ExtractIngredientsTool, 
     FilterIngredientsTool, 
     DietaryFilterTool,
     NutrientAnalysisTool
 )
 from ibm_watsonx_ai import Credentials, APIClient
-from models import RecipeSuggestionOutput, NutrientAnalysisOutput 
+from src.models import RecipeSuggestionOutput, NutrientAnalysisOutput 
 
 credentials = Credentials(
                    url = "https://us-south.ml.cloud.ibm.com",
