@@ -1,4 +1,5 @@
 import gradio as gr
+import base64
 import time
 from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
 
@@ -201,6 +202,13 @@ function createGradioAnimation() {
 }
 """
 
+# Open the image file in binary read mode
+with open("background.jpg", "rb") as img_file:
+    # Read the file and encode it to Base64
+    b64_bytes = base64.b64encode(img_file.read())
+    # Convert the Base64 bytes to a UTF-8 string
+    b64_string = b64_bytes.decode("utf-8")
+
 # Use a theme and custom CSS with Blocks
 with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
     gr.Markdown("# How it works", elem_classes="title")
@@ -216,7 +224,13 @@ with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
         
         with gr.Column(scale=2, min_width=600):
             gr.Markdown("## Results will appear here...", elem_classes="title")
-            result_display = gr.Markdown(height=800, )
+            # result_display = gr.Markdown(height=800, )
+            result_display = gr.Markdown(
+                "<div style='border: 1px solid #ccc; "
+                "padding: 1rem; text-align: center; "
+                "color: #666;'>No results yet</div>",
+                height=800
+            )
     
     submit_btn.click(
         fn=analyze_food,

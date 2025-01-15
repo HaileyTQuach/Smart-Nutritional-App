@@ -4,13 +4,13 @@ import base64
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from dotenv import load_dotenv
-from tools import (
+from src.tools import (
     ExtractIngredientsTool, 
     FilterIngredientsTool, 
     DietaryFilterTool,
     NutrientAnalysisTool
 )
-from models import RecipeSuggestionOutput, NutrientAnalysisOutput 
+from src.models import RecipeSuggestionOutput, NutrientAnalysisOutput 
 from io import BytesIO
 
 load_dotenv()
