@@ -86,18 +86,21 @@ class FilterIngredientsTool:
 
 class DietaryFilterTool:
     @tool("Filter based on dietary restrictions")
-    def filter_based_on_restrictions(ingredients: List[str], dietary_restrictions: str) -> List[str]:
+    def filter_based_on_restrictions(ingredients: List[str], dietary_restrictions: Optional[str] = None) -> List[str]:
         """
         Uses an LLM model to filter ingredients based on dietary restrictions.
-        
+
         :param ingredients: List of ingredients.
-        :param dietary_restrictions: Dietary restrictions (e.g., vegan, gluten-free).
+        :param dietary_restrictions: Dietary restrictions (e.g., vegan, gluten-free). Defaults to None.
         :return: Filtered list of ingredients that comply with the dietary restrictions.
         """
+        # If no dietary restrictions are provided, return the original ingredients
+        if not dietary_restrictions:
+            return ingredients
+
         # Initialize the WatsonX model
         model = ModelInference(
-            model_id="meta-llama/llama-3-2-11b-vision-instruct",
-            # model_id="ibm/granite-3-8b-instruct",
+            model_id="ibm/granite-3-8b-instruct",
             credentials=credentials,
             project_id=WATSONX_PROJECT_ID,
             params={"max_tokens": 150},
@@ -110,6 +113,7 @@ class DietaryFilterTool:
         Provide the filtered list of ingredients as a comma-separated string.
         """
 
+        # Send the prompt to the model for filtering
         response = model.chat(
             messages=[
                 {
@@ -125,6 +129,7 @@ class DietaryFilterTool:
         filtered = response['choices'][0]['message']['content'].strip().lower()
         filtered_list = [item.strip() for item in filtered.split(',') if item.strip()]
         return filtered_list
+
     
 class NutrientAnalysisTool():
     @tool("Analyze nutritional values and calories of the dish from uploaded image")
