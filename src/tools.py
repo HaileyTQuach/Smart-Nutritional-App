@@ -1,193 +1,175 @@
-import json
 import os
+import yaml
 import base64
-import requests
-from dotenv import load_dotenv
-from langchain.tools import tool
-from PIL import Image
-from ibm_watsonx_ai import Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from io import BytesIO
-from typing import List
-import logging
-logging.basicConfig(level=logging.INFO)
-
-logging.info("Extracting ingredients from image...")
-
-# Load environment variables (e.g., API keys)
-WATSONX_API_KEY = os.environ.get('WATSONX_API_KEY')
-WATSONX_URL = os.environ.get('WATSONX_URL')
-WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+from src.tools import (
+    ExtractIngredientsTool, 
+    FilterIngredientsTool, 
+    DietaryFilterTool,
+    NutrientAnalysisTool
+)
+from ibm_watsonx_ai import Credentials, APIClient
+from src.models import RecipeSuggestionOutput, NutrientAnalysisOutput 
 
 credentials = Credentials(
-    url=WATSONX_URL,
-    api_key=WATSONX_API_KEY
-)
+                   url = "https://us-south.ml.cloud.ibm.com",
+                   # api_key = "<YOUR_API_KEY>" # Normally you'd put an API key here, but we've got you covered here
+                  )
+client = APIClient(credentials)
+project_id = "skills-network"
 
-class ExtractIngredientsTool():
-    @tool("Extract ingredients")
-    def extract_ingredient(image_input: str):
-        """
-        Extract ingredients from a food item image.
-        
-        :param image_input: The image file path (local) or URL (remote).
-        :return: A list of ingredients extracted from the image.
-        """
-        if image_input.startswith("http"):  # Check if input is a URL
-            # Download the image from the URL
-            response = requests.get(image_input)
-            response.raise_for_status()
-            image_bytes = BytesIO(response.content)
-        else:
-            # Open the local image file in binary mode
-            if not os.path.isfile(image_input):
-                raise FileNotFoundError(f"No file found at path: {image_input}")
-            with open(image_input, "rb") as file:
-                image_bytes = BytesIO(file.read())
+# Get the absolute path to the config directory
+CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 
-        # Encode the image to a base64 string
-        encoded_image = base64.b64encode(image_bytes.read()).decode("utf-8")
-
-        # Call the model with the encoded image
-        model = ModelInference(
-            model_id="meta-llama/llama-3-2-90b-vision-instruct",
-            credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
-            params={"max_tokens": 300},
-        )
-        response = model.chat(
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "Extract ingredients from the food item image"},
-                        {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + encoded_image}}
-                    ],
-                }
-            ]
-        )
-
-        return response['choices'][0]['message']['content']
-
-
-class FilterIngredientsTool:
-    @tool("Filter ingredients")
-    def filter_ingredients(raw_ingredients: str) -> List[str]:
-        """
-        Processes the raw ingredient data and filters out non-food items or noise.
-        
-        :param raw_ingredients: Raw ingredients as a string.
-        :return: A list of cleaned and relevant ingredients.
-        """
-        # Example implementation: parse the raw ingredients string into a list
-        # This can be enhanced with more sophisticated parsing as needed
-        ingredients = [ingredient.strip().lower() for ingredient in raw_ingredients.split(',') if ingredient.strip()]
-        return ingredients
-
-class DietaryFilterTool:
-    @tool("Filter based on dietary restrictions")
-    def filter_based_on_restrictions(ingredients: List[str], dietary_restrictions: str) -> List[str]:
-        """
-        Uses an LLM model to filter ingredients based on dietary restrictions.
-        
-        :param ingredients: List of ingredients.
-        :param dietary_restrictions: Dietary restrictions (e.g., vegan, gluten-free).
-        :return: Filtered list of ingredients that comply with the dietary restrictions.
-        """
-        # Initialize the WatsonX model
-        model = ModelInference(
-            model_id="meta-llama/llama-3-2-11b-vision-instruct",
-            credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
-            params={"max_tokens": 150},
-        )
-
-        # Create a prompt for the LLM to filter ingredients
-        prompt = f"""
-        You are a nutritionist AI. Given the following list of ingredients: {', '.join(ingredients)},
-        filter out any ingredients that do not comply with a {dietary_restrictions} diet.
-        Provide the filtered list of ingredients as a comma-separated string.
-        """
-
-        response = model.chat(
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt}
-                    ],
-                }
-            ]
-        )
-
-        # Parse the response to return the filtered list
-        filtered = response['choices'][0]['message']['content'].strip().lower()
-        filtered_list = [item.strip() for item in filtered.split(',') if item.strip()]
-        return filtered_list
+@CrewBase
+class BaseNutriCoachCrew:
+    agents_config_path = os.path.join(CONFIG_DIR, 'agents.yaml')
+    tasks_config_path = os.path.join(CONFIG_DIR, 'tasks.yaml')
     
-class NutrientAnalysisTool():
-    @tool("Analyze nutritional values and calories of the dish from uploaded image")
-    def analyze_image(image_input: str):
-        """
-        Provide a detailed nutrient breakdown and estimate the total calories of all ingredients from the uploaded image.
+    def __init__(self, image_data, dietary_restrictions: str = None):
+        self.image_data = image_data
+        self.dietary_restrictions = dietary_restrictions
+
+        with open(self.agents_config_path, 'r') as f:
+            self.agents_config = yaml.safe_load(f)
         
-        :param image_input: The image file path (local) or URL (remote).
-        :return: A string with nutrient breakdown (protein, carbs, fat, etc.) and estimated calorie information.
-        """
-        if image_input.startswith("http"):  # Check if input is a URL
-            # Download the image from the URL
-            response = requests.get(image_input)
-            response.raise_for_status()
-            image_bytes = BytesIO(response.content)
-        else:
-            # Open the local image file in binary mode
-            if not os.path.isfile(image_input):
-                raise FileNotFoundError(f"No file found at path: {image_input}")
-            with open(image_input, "rb") as file:
-                image_bytes = BytesIO(file.read())
+        with open(self.tasks_config_path, 'r') as f:
+            self.tasks_config = yaml.safe_load(f)
 
-        # Encode the image to a base64 string
-        encoded_image = base64.b64encode(image_bytes.read()).decode("utf-8")
-
-        # Call the model with the encoded image
-        model = ModelInference(
-            model_id="meta-llama/llama-3-2-90b-vision-instruct",
-            credentials=credentials,
-            project_id=WATSONX_PROJECT_ID,
-            params={"max_tokens": 300},
-        )
-        # Assistant prompt (can be customized)
-        assistant_prompt = """
-            You are an expert nutritionist. Your task is to analyze the food items displayed in the image and provide a detailed nutritional assessment using the following format:
-        1. **Identification**: List each identified food item clearly, one per line.
-        2. **Portion Size & Calorie Estimation**: For each identified food item, specify the portion size and provide an estimated number of calories. Use bullet points with the following structure:
-        - **[Food Item]**: [Portion Size], [Number of Calories] calories
-        Example:
-        *   **Salmon**: 6 ounces, 210 calories
-        *   **Asparagus**: 3 spears, 25 calories
-        3. **Total Calories**: Provide the total number of calories for all food items.
-        Example:
-        Total Calories: [Number of Calories]
-        4. **Nutrient Breakdown**: Include a breakdown of key nutrients such as **Protein**, **Carbohydrates**, **Fats**, **Vitamins**, and **Minerals**. Use bullet points, and for each nutrient provide details about the contribution of each food item.
-        Example:
-        *   **Protein**: Salmon (35g), Asparagus (3g), Tomatoes (1g) = [Total Protein]
-        5. **Health Evaluation**: Evaluate the healthiness of the meal in one paragraph.
-        6. **Disclaimer**: Include the following exact text as a disclaimer:
-        The nutritional information and calorie estimates provided are approximate and are based on general food data. 
-        Actual values may vary depending on factors such as portion size, specific ingredients, preparation methods, and individual variations. 
-        For precise dietary advice or medical guidance, consult a qualified nutritionist or healthcare provider.
-        Format your response exactly like the template above to ensure consistency.
-        """
-        response = model.chat(
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": assistant_prompt},
-                        {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + encoded_image}}
-                    ],
-                }
-            ]
+    @agent
+    def ingredient_detection_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['ingredient_detection_agent'],
+            tools=[
+                ExtractIngredientsTool.extract_ingredient, 
+                FilterIngredientsTool.filter_ingredients
+            ],
+            allow_delegation=False,
+            verbose=True
         )
 
-        return response['choices'][0]['message']['content']
+    @agent
+    def dietary_filtering_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['dietary_filtering_agent'],
+            tools=[DietaryFilterTool.filter_based_on_restrictions],
+            allow_delegation=False,
+            max_iter=10,
+            verbose=True
+        )
+
+    @agent
+    def nutrient_analysis_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['nutrient_analysis_agent'],
+            tools=[NutrientAnalysisTool.analyze_image],
+            allow_delegation=False,
+            max_iter=4,
+            verbose=True
+        )
+
+    @agent
+    def recipe_suggestion_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['recipe_suggestion_agent'],
+            allow_delegation=False,
+            verbose=True
+        )
+
+    @task
+    def ingredient_detection_task(self) -> Task:
+        task_config = self.tasks_config['ingredient_detection_task']
+
+        return Task(
+            description=task_config['description'],
+            agent=self.ingredient_detection_agent(),
+            expected_output=task_config['expected_output']
+        )
+
+    @task
+    def dietary_filtering_task(self) -> Task:
+        task_config = self.tasks_config['dietary_filtering_task']
+
+        return Task(
+            description=task_config['description'],
+            agent=self.dietary_filtering_agent(),
+            depends_on=['ingredient_detection_task'],
+            input_data=lambda outputs: {
+                'ingredients': outputs['ingredient_detection_task'],
+                'dietary_restrictions': self.dietary_restrictions
+            },
+            expected_output=task_config['expected_output']
+        )
+
+    @task
+    def nutrient_analysis_task(self) -> Task:
+        task_config = self.tasks_config['nutrient_analysis_task']
+
+        return Task(
+            description=task_config['description'],
+            agent=self.nutrient_analysis_agent(),
+            expected_output=task_config['expected_output'],
+            output_json=NutrientAnalysisOutput
+        )
+
+    @task
+    def recipe_suggestion_task(self) -> Task:
+        task_config = self.tasks_config['recipe_suggestion_task']
+
+        return Task(
+            description=task_config['description'],
+            agent=self.recipe_suggestion_agent(),
+            depends_on=['dietary_filtering_task'],
+            input_data=lambda outputs: {
+                'filtered_ingredients': outputs['dietary_filtering_task']
+            },
+            expected_output=task_config['expected_output'],
+            output_json=RecipeSuggestionOutput
+        )
+
+
+@CrewBase
+class NutriCoachRecipeCrew(BaseNutriCoachCrew):
+
+    @crew
+    def crew(self) -> Crew:
+        tasks = [
+            self.ingredient_detection_task(),
+            self.dietary_filtering_task(),
+            self.recipe_suggestion_task()
+        ]
+
+        agents = [
+            self.ingredient_detection_agent(),
+            self.dietary_filtering_agent(),
+            self.recipe_suggestion_agent()
+        ]
+
+        return Crew(
+            agents=agents,
+            tasks=tasks,
+            process=Process.sequential,
+            verbose=True
+        )
+
+
+@CrewBase
+class NutriCoachAnalysisCrew(BaseNutriCoachCrew):
+
+    @crew
+    def crew(self) -> Crew:
+        tasks = [
+            self.nutrient_analysis_task(),
+        ]
+
+        agents = [
+            self.nutrient_analysis_agent(),
+        ]
+
+        return Crew(
+            agents=agents,
+            tasks=tasks,
+            process=Process.sequential,
+            verbose=True
+        )
