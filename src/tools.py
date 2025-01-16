@@ -8,7 +8,7 @@ from PIL import Image
 from ibm_watsonx_ai import Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference
 from io import BytesIO
-from typing import List
+from typing import List, Optional
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -108,9 +108,11 @@ class DietaryFilterTool:
 
         # Create a prompt for the LLM to filter ingredients
         prompt = f"""
-        You are a nutritionist AI. Given the following list of ingredients: {', '.join(ingredients)},
-        filter out any ingredients that do not comply with a {dietary_restrictions} diet.
-        Provide the filtered list of ingredients as a comma-separated string.
+        You are an AI nutritionist specialized in dietary restrictions. 
+        Given the following list of ingredients: {', '.join(ingredients)}, 
+        and the dietary restriction: {dietary_restrictions}, 
+        remove any ingredient that does not comply with this restriction. 
+        Return only the compliant ingredients as a comma-separated list with no additional commentary.
         """
 
         # Send the prompt to the model for filtering
