@@ -46,6 +46,7 @@ class BaseNutriCoachCrew:
                 FilterIngredientsTool.filter_ingredients
             ],
             allow_delegation=False,
+            max_iter=5,
             verbose=True
         )
 
@@ -54,8 +55,8 @@ class BaseNutriCoachCrew:
         return Agent(
             config=self.agents_config['dietary_filtering_agent'],
             tools=[DietaryFilterTool.filter_based_on_restrictions],
-            allow_delegation=False,
-            max_iter=10,
+            allow_delegation=True,
+            max_iter=6,
             verbose=True
         )
 
