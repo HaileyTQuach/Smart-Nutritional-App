@@ -113,7 +113,7 @@ def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progres
     :param workflow_type: Workflow type ("recipe" or "analysis")
     :return: Result from the NutriCoach workflow.
     """
-    # progress(0, desc="Starting...")
+    
     image.save("uploaded_image.jpg")  # Save the uploaded image temporarily
     image_path = "uploaded_image.jpg"
 
