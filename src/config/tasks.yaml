@@ -7,10 +7,11 @@ ingredient_detection_task:
 
 dietary_filtering_task:
   description: >
-    Filter the detected ingredients based on user-provided {dietary_restrictions}.
+    Filter the detected ingredients based on user-provided {dietary_restrictions} if provided. 
+    If no dietary restriction is provided, keep the list as is and move to the next step.
   agent: dietary_filtering_agent
   expected_output: >
-    A list of filtered ingredients based on dietary restrictions.
+    A list of filtered ingredients based on dietary restrictions, if provided.
 
 nutrient_analysis_task:
   description: >

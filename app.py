@@ -199,7 +199,9 @@ function createGradioAnimation() {
 # Use a theme and custom CSS with Blocks
 with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
     gr.Markdown("# How it works", elem_classes="title")
-    gr.Markdown("Upload an image of food and select a workflow type (recipe or analysis) to get nutritional insights or recipe ideas.", elem_classes="text")
+    gr.Markdown("Upload an image of your fridge content, enter your dietary restriction (if you have any!) and select a workflow type 'recipe' then click 'Analyze' to get recipe ideas.", elem_classes="text")
+    gr.Markdown("Upload an image of a complete dish, leave dietary restriction blank and select a workflow type 'analysis' then click 'Analyze' to get nutritional insights.", elem_classes="text")
+    gr.Markdown("You can also select one of the examples provided to autofill the input sections and click 'Analyze' right away!", elem_classes="text")
 
     with gr.Row():
         with gr.Column(scale=1, min_width=400):
@@ -210,15 +212,27 @@ with gr.Blocks(theme=gr.themes.Citrus(), css=css, js=js) as demo:
             submit_btn = gr.Button("Analyze")
         
         with gr.Column(scale=2, min_width=600):
+            # Place Examples directly under the Analyze button
+            gr.Examples(
+                examples=[
+                    ["examples/food-1.jpg", "vegan", "recipe"],
+                    ["examples/food-2.jpg", "", "analysis"],
+                    ["examples/food-3.jpg", "keto", "recipe"],
+                    ["examples/food-4.jpg", "", "analysis"],
+                ],
+                inputs=[image_input, dietary_input, workflow_radio],
+                label="Try an Example: Select one of the examples below to autofil the input section then click Analyze"
+                # No function or outputs provided, so it only autofills inputs
+            )
             gr.Markdown("## Results will appear here...", elem_classes="title")
             # result_display = gr.Markdown(height=800, )
             result_display = gr.Markdown(
                 "<div style='border: 1px solid #ccc; "
                 "padding: 1rem; text-align: center; "
                 "color: #666;'>No results yet</div>",
-                height=800
+                height=500
             )
-    
+
     submit_btn.click(
         fn=analyze_food,
         inputs=[image_input, dietary_input, workflow_radio],
