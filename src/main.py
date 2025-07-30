@@ -3,14 +3,14 @@ import sys
 import base64
 import json
 from dotenv import load_dotenv
-from crew import NutriCoachAnalysisCrew, NutriCoachRecipeCrew
+from crew import NourishBotAnalysisCrew, NourishBotRecipeCrew
 
 # Load environment variables (e.g., API keys)
 load_dotenv()
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 def run(image_path: str, dietary_restrictions: str, workflow_type: str):
-    print("## Welcome to the AI NutriCoach Crew")
+    print("## Welcome to the AI NourishBot Crew")
     print('------------------------------------')
 
     # encoded_image = encode_image_to_base64(image_path)
@@ -23,11 +23,11 @@ def run(image_path: str, dietary_restrictions: str, workflow_type: str):
     }
 
     if workflow_type == 'analysis':
-        crew_instance = NutriCoachAnalysisCrew(
+        crew_instance = NourishBotAnalysisCrew(
             image_data=image_path,
         )
     elif workflow_type == 'recipe':
-        crew_instance = NutriCoachRecipeCrew(
+        crew_instance = NourishBotRecipeCrew(
             image_data=image_path,
             dietary_restrictions=dietary_restrictions
         )
