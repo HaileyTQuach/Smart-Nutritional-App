@@ -22,7 +22,7 @@ WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 
 @CrewBase
-class BaseNutriCoachCrew:
+class BaseNourishBotCrew:
     agents_config_path = os.path.join(CONFIG_DIR, 'agents.yaml')
     tasks_config_path = os.path.join(CONFIG_DIR, 'tasks.yaml')
     
@@ -142,7 +142,7 @@ class BaseNutriCoachCrew:
 
 
 @CrewBase
-class NutriCoachRecipeCrew(BaseNutriCoachCrew):
+class NourishBotRecipeCrew(BaseNourishBotCrew):
 
     @crew
     def crew(self) -> Crew:
@@ -167,7 +167,7 @@ class NutriCoachRecipeCrew(BaseNutriCoachCrew):
 
 
 @CrewBase
-class NutriCoachAnalysisCrew(BaseNutriCoachCrew):
+class NourishBotAnalysisCrew(BaseNourishBotCrew):
 
     @crew
     def crew(self) -> Crew:
