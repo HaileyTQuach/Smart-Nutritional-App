@@ -1,13 +1,13 @@
 import gradio as gr
 import base64
 import time
-from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
+from src.crew import NourishBotRecipeCrew, NourishBotAnalysisCrew
 
 def format_recipe_output(final_output):
     """
     Formats the recipe output into a table-based Markdown format.
     
-    :param final_output: The output from the NutriCoachRecipe workflow.
+    :param final_output: The output from the NourishBotRecipe workflow.
     :return: Formatted output as a Markdown string.
     """
     output = "## 🍽 Recipe Ideas\n\n"
@@ -48,7 +48,7 @@ def format_analysis_output(final_output):
     Formats nutritional analysis output into a table-based Markdown format,
     including health evaluation at the end.
     
-    :param final_output: The JSON output from the NutriCoachAnalysis workflow.
+    :param final_output: The JSON output from the NourishBotAnalysis workflow.
     :return: Formatted output as a Markdown string.
     """
     output = "## 🥗 Nutritional Analysis\n\n"
@@ -111,7 +111,7 @@ def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progres
     :param image: Uploaded image (PIL format)
     :param dietary_restrictions: Dietary restriction as a string (e.g., "vegan")
     :param workflow_type: Workflow type ("recipe" or "analysis")
-    :return: Result from the NutriCoach workflow.
+    :return: Result from the NourishBot workflow.
     """
     
     image.save("uploaded_image.jpg")  # Save the uploaded image temporarily
@@ -125,12 +125,12 @@ def analyze_food(image, dietary_restrictions, workflow_type, progress=gr.Progres
     
     # Initialize the appropriate crew instance based on workflow type
     if workflow_type == "recipe":
-        crew_instance = NutriCoachRecipeCrew(
+        crew_instance = NourishBotRecipeCrew(
             image_data=image_path,
             dietary_restrictions=dietary_restrictions
         )
     elif workflow_type == "analysis":
-        crew_instance = NutriCoachAnalysisCrew(
+        crew_instance = NourishBotAnalysisCrew(
             image_data=image_path
         )
     else:
@@ -172,7 +172,7 @@ function createGradioAnimation() {
     container.style.marginBottom = '20px';
     container.style.color = '#eba93f';
 
-    var text = 'Welcome to your AI NutriCoach!';
+    var text = 'Welcome to your AI NourishBot!';
     for (var i = 0; i < text.length; i++) {
         (function(i){
             setTimeout(function(){
