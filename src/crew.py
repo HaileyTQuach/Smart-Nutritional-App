@@ -23,7 +23,7 @@ project_id = "skills-network"
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 
 @CrewBase
-class BaseNutriCoachCrew:
+class BaseNourishBotCrew:
     agents_config_path = os.path.join(CONFIG_DIR, 'agents.yaml')
     tasks_config_path = os.path.join(CONFIG_DIR, 'tasks.yaml')
     
@@ -37,16 +37,16 @@ class BaseNutriCoachCrew:
         with open(self.tasks_config_path, 'r') as f:
             self.tasks_config = yaml.safe_load(f)
             
-    ## TODO: Define the agents and tasks for the NutriCoach crew
+    ## TODO: Define the agents and tasks for the NourishBot crew
 
 
 @CrewBase
-class NutriCoachRecipeCrew(BaseNutriCoachCrew):
+class NourishBotRecipeCrew(BaseNourishBotCrew):
 
-    ##TODO: Define the agents and tasks for the NutriCoachRecipeCrew
+    ##TODO: Define the agents and tasks for the NourishBotRecipeCrew
 
 
 @CrewBase
-class NutriCoachAnalysisCrew(BaseNutriCoachCrew):
+class NourishBotAnalysisCrew(BaseNourishBotCrew):
 
-    ## TODO: Define the agents and tasks for the NutriCoachAnalysisCrew
+    ## TODO: Define the agents and tasks for the NourishBotAnalysisCrew
