@@ -1,6 +1,6 @@
 import gradio as gr
 import time
-from src.crew import NutriCoachRecipeCrew, NutriCoachAnalysisCrew
+from src.crew import NourishBotRecipeCrew, NourishBotAnalysisCrew
 
 
 # Launch the Gradio interface
